@@ -1,0 +1,28 @@
+---
+- name: "Configuration DNS Local test.mg"
+  hosts: all  # <--- C'EST ICI QU'ÉTAIT LE PROBLÈME
+  become: yes
+
+  tasks:
+    - name: "Installer le paquet bind9"
+      apt:
+        name: bind9
+        state: present
+        update_cache: yes
+
+    - name: "Copier la declaration de zone"
+      copy:
+        src: /vagrant/named.conf.local
+        dest: /etc/bind/named.conf.local
+
+    - name: "Copier la base de donnees de test.mg"
+      copy:
+        src: /vagrant/db.test.mg
+        dest: /etc/bind/db.test.mg
+      notify: "Redemarrer le service DNS"
+
+  handlers:
+    - name: "Redemarrer le service DNS"
+      service:
+        name: bind9
+        state: restarted
